@@ -30,25 +30,24 @@ public class BaseApplication extends AbstractVerticle{
         server = vertx.createHttpServer();
         Cluster cluster = Cluster.builder().addContactPoint("192.168.8.2").build();
         Session session = cluster.connect("dev");
-
+        InitializeCassandra initializeCassandra = new InitializeCassandra(cluster, session);
+        initializeCassandra.createKeyspaces();
 
         Router router = Router.router(vertx);
         router.route().handler(routingContext -> {
 
             HttpServerResponse response = routingContext.response();
-//            SampleJSONReturn sampleJSONReturn = new SampleJSONReturn();
+
             response.putHeader("content-type","text/plan");
 
-            session.execute("INSERT INTO emp (emp_first,emp_last,emp_dept,empid) VALUES ('Varun','Vasudevan','Boss',3)");
-
-            String returnString = "";
-            ResultSet results = session.execute("select * from emp;");
-            for (Row row: results)
-                    returnString=row.getString("emp_first");
-//            sampleJSONReturn.setDescription(results.one().getString("emp_first"));
-//            sampleJSONReturn.createContentModel();
-
-            response.end(returnString);
+//            session.execute("INSERT INTO emp (emp_first,emp_last,emp_dept,empid) VALUES ('Varun','Vasudevan','Boss',3)");
+//
+//            String returnString = "";
+//            ResultSet results = session.execute("select * from emp;");
+//            for (Row row: results)
+//                    returnString=row.getString("emp_first");
+//
+            response.end("Success");
 
         });
         server.requestHandler(router::accept).listen(8080);
