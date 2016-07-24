@@ -1,17 +1,7 @@
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
-
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 
 /**
@@ -20,6 +10,7 @@ import java.util.Arrays;
 public class BaseApplication extends AbstractVerticle{
 
     private HttpServer server;
+    private CassandraAppOps cassandraAppOps;
 
     public static void main(String[] args) {
 
@@ -28,28 +19,30 @@ public class BaseApplication extends AbstractVerticle{
     @Override
     public void start()throws Exception{
         server = vertx.createHttpServer();
-        Cluster cluster = Cluster.builder().addContactPoint("192.168.8.2").build();
-        Session session = cluster.connect("dev");
-        InitializeCassandra initializeCassandra = new InitializeCassandra(cluster, session);
-        initializeCassandra.createKeyspaces();
+
+        CassandraAccessor cassandraAccessor = new CassandraAccessor();
+
+        cassandraAppOps = new CassandraAppOps(cassandraAccessor);
+//        cassandraAppOps.dropKeyspace();
+        cassandraAppOps.createKeyspaces();
+        cassandraAppOps.createContentTable();
+
 
         Router router = Router.router(vertx);
-        router.route().handler(routingContext -> {
+        router.route("/putBasic").handler(routingContext -> {
 
             HttpServerResponse response = routingContext.response();
-
-            response.putHeader("content-type","text/plan");
-
-//            session.execute("INSERT INTO emp (emp_first,emp_last,emp_dept,empid) VALUES ('Varun','Vasudevan','Boss',3)");
-//
-//            String returnString = "";
-//            ResultSet results = session.execute("select * from emp;");
-//            for (Row row: results)
-//                    returnString=row.getString("emp_first");
-//
-            response.end("Success");
+            ResponseCreator responseCreator = new PutBasicContent(response);
+            response.putHeader("content-type",responseCreator.getHeader());
+            response.end(responseCreator.getContent());
 
         });
         server.requestHandler(router::accept).listen(8080);
+    }
+
+    @Override
+    public void stop() throws Exception
+    {
+        cassandraAppOps.dropKeyspace();
     }
 }

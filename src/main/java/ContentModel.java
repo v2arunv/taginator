@@ -1,35 +1,38 @@
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by flazer on 23/7/2016.
  */
 public class ContentModel {
 
-    private String id;
-    private String description;
+    private int id;
+    private String payload;
     private ArrayList<String> tags;
+    private Date created_at;
 
-    public ContentModel(String id, String description, ArrayList<String> tags)
+    public ContentModel(int id, String payload, ArrayList<String> tags, Date created_at)
     {
         this.id = id;
-        this.description = description;
+        this.payload = payload;
         this.tags = tags;
+        this.created_at = created_at;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
-    public String getDescription() {
-        return description;
+    public String getPayload() {
+        return payload;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setPayload(String payload) {
+        this.payload = payload;
     }
 
     public ArrayList<String> getTags() {
